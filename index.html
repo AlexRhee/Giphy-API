@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Giphy-API</title>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+        crossorigin="anonymous">
+
+
+</head>
+
+<body>
+    <div class="container">
+
+        <h1>GIF Retriever: Sports and More</h1>
+
+        <!-- Rendered buttons will get dumped Here  -->
+        <div id="buttons-view"></div>
+
+        <form id="input-form">
+            <label for="input">Add a GIF Category</label>
+            <input type="text" id="input">
+            <br>
+
+            <!-- Button triggers new category to be added -->
+            <input id="add" type="submit" value="Add a GIF type">
+        </form>
+
+        <!-- GIFs will get dumped here -->
+        <div id="view"></div>
+
+
+
+    </div>
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script>
+
+        var categories = ["Basketball", "Football", "Baseball", "Tennis"];
+
+        // displayGif function re-renders the HTML to display the appropriate content
+        function displayGif() {
+            $("#view").empty();
+            var category = $(this).attr("data-name");
+            var queryURL = "https://api.giphy.com/v1/gifs/search?api_key=dc6zaTOxFJmzC&q=" + category;
+
+            // Creates AJAX call for the specific GIF button being clicked
+            $.ajax({
+                url: queryURL,
+                method: "GET"
+            }).then(function (response) {
+                
+                var results = response.data;
+                console.log(results);
+
+                for (var i = 0; i < 10; i++) {
+                    var gifDiv = $("<div class='item'>");
+
+                    var rating = results[i].rating;
+
+                    var p = $("<p>").text("Rating: " + rating);
+
+                    var catImage = $("<img>");
+                    catImage.attr("src", results[i].images.fixed_height.url);
+                    catImage.attr("class", "image");
+                    catImage.attr("state", "animated");
+                    catImage.attr("data-still", results[i].images.fixed_height_still.url);
+                    catImage.attr("data-animate", results[i].images.fixed_height.url);
+
+                    gifDiv.prepend(p);
+                    gifDiv.prepend(catImage);
+
+                    $("#view").prepend(gifDiv);
+                }
+
+
+            });
+
+        }
+
+        function renderButtons() {
+
+            // Deletes any rendered GIFs
+            $("#view").empty();
+
+            // Loops through the array of GIFS
+            for (var i = 0; i < categories.length; i++) {
+                
+                var a = $("<button>");
+                a.addClass("category");
+                a.attr("data-name", categories[i]);
+                a.text(categories[i]);
+                $("#buttons-view").append(a);
+            }
+        }
+
+        // This function handles events where the add GIF button is clicked
+        $("#add").on("click", function (event) {
+            event.preventDefault();
+            $("#buttons-view").empty();
+            // This line of code will grab the input from the textbox
+            var category = $("#input").val().trim();
+
+            // The category from the textbox is then added to our array
+            categories.push(category);
+
+            // Calling renderButtons which handles the processing of our movie array
+            renderButtons();
+
+        });
+
+        // Adding click event listeners to all elements with a class of "category"
+        $(document).on("click", ".category", displayGif);
+       
+
+
+
+        function pause() {
+            var dataState = $(this).attr("state");
+            var dataStill = $(this).attr("data-still");
+            var dataAnimate = $(this).attr("data-animate");
+            console.log(this);
+            if (dataState === "animated") {
+                $(this).attr("src", dataStill);
+                $(this).attr("state", "still");
+            }
+            else if (dataState === "still") {
+                $(this).attr("src", dataAnimate);
+                $(this).attr("state", "animated");
+            }
+
+
+        };
+
+         $(document).on("click", ".image", pause);
+
+        // Calling the renderButtons function to display the intial buttons
+        renderButtons();
+
+
+
+
+    </script>
+</body>
+
+</html>
